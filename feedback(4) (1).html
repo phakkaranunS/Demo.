@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบประเมินความพึงพอใจการใช้งาน ZUPPORTS LearnFlow</title>
+<style>
+body{font-family:Segoe UI,Tahoma,sans-serif;background:#f4f7fb;margin:0;padding:20px;color:#1f2937}
+.container{max-width:1100px;margin:auto}
+.card{background:#fff;border-radius:18px;padding:30px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+h1{color:#1d4ed8} h2{color:#2563eb}
+.question{margin:20px 0;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
+.star{font-size:30px;color:#cbd5e1;cursor:pointer}
+.star.active{color:#fbbf24}
+input,select,textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px}
+textarea{min-height:100px}
+button{background:#2563eb;color:white;border:none;padding:14px;border-radius:10px;width:100%;font-size:16px;cursor:pointer}
+button:hover{background:#1d4ed8}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.grid{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ddd;padding:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="card">
+<h1>📋 แบบประเมินความพึงพอใจการใช้งาน ZUPPORTS LearnFlow</h1>
+<p>สำหรับผู้เรียนเรื่อง Incoterms</p>
+<div id="app"></div>
+</div>
+</div>
+
+<script>
+const questions=[
+"หน้าเว็บไซต์มีความสวยงามและน่าสนใจ",
+"เมนูและการนำทางภายในเว็บไซต์เข้าใจง่าย",
+"เนื้อหา 'Incoterms คืออะไร' เข้าใจง่าย",
+"ภาพรวม 11 เทอมช่วยให้เข้าใจภาพรวม Incoterms",
+"เนื้อหาแต่ละ Incoterm มีความชัดเจน",
+"ตัวอย่างและภาพประกอบช่วยให้เข้าใจสถานการณ์จริง",
+"Pre-Test เหมาะสมกับระดับความรู้",
+"Post-Test สอดคล้องกับเนื้อหาที่เรียน",
+"แบบทดสอบช่วยวัดความเข้าใจได้จริง",
+"Learning Report เข้าใจง่ายและเป็นประโยชน์",
+"หลังเรียนเข้าใจ Buyer และ Seller มากขึ้น",
+"หลังเรียนเข้าใจการแบ่งความรับผิดชอบด้านค่าใช้จ่าย",
+"หลังเรียนเข้าใจการโอนความเสี่ยงในการขนส่ง",
+"สามารถเลือกใช้ Incoterms ได้ดีขึ้น",
+"ความพึงพอใจโดยรวมต่อระบบ"
+];
+
+let ratings=[];
+let html=`
+<div class="grid">
+<div><label>ชื่อ-นามสกุล</label><input id="name"></div>
+<div><label>อีเมล</label><input id="email"></div>
+</div>
+<label>เคยเรียน Incoterms มาก่อนหรือไม่</label>
+<select id="experience">
+<option>ไม่เคย</option>
+<option>เคยเล็กน้อย</option>
+<option>เคยเรียนมาก่อนแล้ว</option>
+</select>
+`;
+
+questions.forEach((q,i)=>{
+html+=`<div class="question"><b>${i+1}. ${q}</b><div data-index="${i}">`;
+for(let s=1;s<=5;s++) html+=`<span class="star" data-v="${s}">★</span>`;
+html+=`</div></div>`;
+});
+
+html+=`
+<h2>ข้อเสนอแนะ</h2>
+<label>สิ่งที่ชอบมากที่สุดในเว็บไซต์</label><textarea id="like"></textarea>
+<label>ส่วนที่ควรปรับปรุง</label><textarea id="improve"></textarea>
+<label>เนื้อหา Incoterms ที่ยังไม่เข้าใจ</label><textarea id="unclear"></textarea>
+<label>ปัญหาที่พบระหว่างการใช้งาน</label><textarea id="problem"></textarea>
+<label>ฟีเจอร์ที่อยากให้เพิ่ม</label><textarea id="feature"></textarea>
+<label>ข้อเสนอแนะเพิ่มเติม</label><textarea id="suggest"></textarea>
+<br><br>
+<button onclick="submitForm()">ส่งแบบประเมิน</button>
+`;
+
+document.getElementById("app").innerHTML=html;
+
+document.querySelectorAll(".star").forEach(st=>{
+st.onclick=()=>{
+let idx=+st.parentElement.dataset.index;
+let val=+st.dataset.v;
+ratings[idx]=val;
+[...st.parentElement.children].forEach(x=>x.classList.toggle('active',+x.dataset.v<=val));
+}
+});
+
+function submitForm(){
+if(ratings.filter(Boolean).length!==questions.length){
+alert("กรุณาให้คะแนนครบทุกข้อ");
+return;
+}
+const avg=(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(2);
+const data={
+timestamp:new Date().toLocaleString('th-TH'),
+name:name.value,email:email.value,
+experience:experience.value,
+ratings:ratings,
+average:avg,
+like:like.value,
+improve:improve.value,
+unclear:unclear.value,
+problem:problem.value,
+feature:feature.value,
+suggest:suggest.value
+};
+localStorage.setItem("learnflow_feedback",JSON.stringify(data));
+
+document.getElementById("app").innerHTML=`
+<h2>🎉 ขอบคุณสำหรับการประเมิน</h2>
+<p>บันทึกข้อมูลเรียบร้อยแล้ว</p>
+<h3>คะแนนเฉลี่ย ${avg}/5</h3>
+<table>
+<tr><th>หัวข้อ</th><th>คะแนน</th></tr>
+${questions.map((q,i)=>`<tr><td>${q}</td><td>${ratings[i]}</td></tr>`).join("")}
+</table>
+<p><b>วันที่ส่ง:</b> ${data.timestamp}</p>
+<p><b>หมายเหตุ:</b> ข้อมูลถูกบันทึกใน LocalStorage ของเบราว์เซอร์</p>
+`;
+}
+</script>
+</body>
+</html>
